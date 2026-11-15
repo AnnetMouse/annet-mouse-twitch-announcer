@@ -132,10 +132,13 @@ def get_segments(client_id, token):
         seen_cursors.add(next_cursor)
         cursor = next_cursor
 
-    raise RuntimeError(
-        f"Schedule has more than {max_pages} pages. "
-        "Stopped to prevent an endless loop."
+    
+    print(
+        f"Reached safety limit of {max_pages} pages; "
+        f"using {len(segments)} segments already retrieved.",
+        flush=True
     )
+    return segments
 
 
 
