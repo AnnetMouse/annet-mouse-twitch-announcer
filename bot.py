@@ -41,9 +41,7 @@ def twitch_token(client_id, secret):
     return result["access_token"]
 
 
-def twitch_get(url, client_id, token):
-    return request_json(url, {
-        
+
 def twitch_get(url, client_id, token):
     try:
         return request_json(url, {
@@ -67,9 +65,6 @@ def twitch_get(url, client_id, token):
             "Twitch API request failed: "
             + json.dumps(details, ensure_ascii=False)
         ) from error
-
-    })
-
 
 def get_segments(client_id, token):
     url = (
