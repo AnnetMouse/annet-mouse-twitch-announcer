@@ -16,7 +16,8 @@ concurrency:
 jobs:
   announce:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 5
+    
     steps:
       - uses: actions/checkout@v4
 
@@ -25,6 +26,7 @@ jobs:
           python-version: "3.12"
 
       - name: Check Twitch schedule and send announcements
+              timeout-minutes: 4
         env:
           TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
           TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
