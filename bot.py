@@ -66,7 +66,10 @@ def twitch_get(url, client_id, token):
             + json.dumps(details, ensure_ascii=False)
         ) from error
 
+
 def get_segments(client_id, token):
+    print("Looking up Twitch channel...", flush=True)
+
     url = (
         "https://api.twitch.tv/helix/users?"
         + urllib.parse.urlencode({"login": CHANNEL})
@@ -80,10 +83,19 @@ def get_segments(client_id, token):
         )
 
     broadcaster_id = users[0]["id"]
+    print("Channel found. Loading schedule...", flush=True)
+
     segments = []
     cursor = None
+    seen_cursors = set()
+    max_pages = 5
 
-    while True:
+    for page in range(1, max_pages + 1):
+        print(
+            f"Loading schedule page {page}/{max_pages}...",
+            flush=True
+        )
+
         params = {
             "broadcaster_id": broadcaster_id,
             "first": "25"
@@ -103,10 +115,28 @@ def get_segments(client_id, token):
             result.get("data", {}).get("segments", [])
         )
 
-        cursor = result.get("pagination", {}).get("cursor")
+        next_cursor = result.get("pagination", {}).get("cursor")
 
-        if not cursor:
+        if not next_cursor:
+            print(
+                f"Schedule loaded. Segments: {len(segments)}",
+                flush=True
+            )
             return segments
+
+        if next_cursor in seen_cursors:
+            raise RuntimeError(
+                "Twitch returned a repeated pagination cursor."
+            )
+
+        seen_cursors.add(next_cursor)
+        cursor = next_cursor
+
+    raise RuntimeError(
+        f"Schedule has more than {max_pages} pages. "
+        "Stopped to prevent an endless loop."
+    )
+
 
 
 def send_telegram(message):
