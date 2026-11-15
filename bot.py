@@ -1,6 +1,7 @@
 
 import json
 import os
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
@@ -42,8 +43,31 @@ def twitch_token(client_id, secret):
 
 def twitch_get(url, client_id, token):
     return request_json(url, {
-        "Client-Id": client_id,
-        "Authorization": f"Bearer {token}",
+        
+def twitch_get(url, client_id, token):
+    try:
+        return request_json(url, {
+            "Client-Id": client_id,
+            "Authorization": f"Bearer {token}",
+        })
+    except urllib.error.HTTPError as error:
+        body = error.read().decode("utf-8", errors="replace")
+        headers = error.headers or {}
+
+        details = {
+            "http_status": error.code,
+            "response": body[:1000],
+            "ratelimit_limit": headers.get("Ratelimit-Limit"),
+            "ratelimit_remaining": headers.get("Ratelimit-Remaining"),
+            "ratelimit_reset": headers.get("Ratelimit-Reset"),
+            "retry_after": headers.get("Retry-After"),
+        }
+
+        raise RuntimeError(
+            "Twitch API request failed: "
+            + json.dumps(details, ensure_ascii=False)
+        ) from error
+
     })
 
 
